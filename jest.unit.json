@@ -1,0 +1,18 @@
+{
+  "preset": "ts-jest",
+  "coverageDirectory": "./coverage",
+  "testMatch": [
+    "**/(*.)+(spec).ts"
+  ],
+  "resetMocks": true,
+  "testTimeout": 20000,
+  "clearMocks": true,
+  "collectCoverageFrom": [
+    "src/**/*.ts",
+    "!src/routes/**/*.ts",
+    "!src/common/*.ts",
+    "!src/utils/*.ts",
+    "!src/middleware/*.ts",
+    "src/config/*.ts"
+  ]
+}

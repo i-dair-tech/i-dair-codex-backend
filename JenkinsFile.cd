@@ -1,0 +1,53 @@
+def incrementValue(value) {
+  return value + 1
+}
+def  version 
+pipeline {
+  agent any
+  environment {
+    VERSION = '' 
+    majord = 0
+    minor = 0
+    }
+    stages {
+      stage('Docker Build') {
+        steps {
+	  checkout([$class: 'GitSCM', branches: [[name: '*/preprod']], extensions: [], userRemoteConfigs: [[credentialsId: 'Keygen-ssh', url: 'git@github.com:i-dair-tech/ri-codex-backend.git']]])   
+          withCredentials([usernamePassword(credentialsId: 'idair', passwordVariable: 'idairpass', usernameVariable: 'idairuser')])  {
+              sh 'docker login  -u ${idairuser} -p ${idairpass} '
+          }
+          script {
+            app = docker.build("windsocially/ri-codex-backend")
+          }
+        }
+      }
+      stage('version') {
+        steps {
+          script {
+            def patch  = readFile('/var/lib/jenkins/workspace/ri-codex-backend/patch.txt').trim()
+            def major  = readFile('/var/lib/jenkins/workspace/ri-codex-backend/major.txt').trim()
+            def minornew  = readFile('/var/lib/jenkins/workspace/ri-codex-backend/minor.txt').trim()
+            version = "${major}.${minornew}.${patch}"            
+          }
+        }
+      }
+    stage('Docker push') {
+      steps {
+        script {
+          withCredentials([usernamePassword(credentialsId: 'idair', passwordVariable: 'idairpass', usernameVariable: 'idairuser')])  {
+            app.push("v.${version}")
+	    app.push("latest")
+          }
+        }
+        sh "docker rmi -f windsocially/ri-codex-backend:v.${version}"
+        sh "docker rmi -f windsocially/ri-codex-backend"
+      }
+    }
+      
+  }
+  post { 
+    always { 
+      echo 'I will always say end again!'
+    }
+  }
+}
