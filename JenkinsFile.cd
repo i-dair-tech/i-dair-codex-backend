@@ -12,21 +12,21 @@ pipeline {
     stages {
       stage('Docker Build') {
         steps {
-	  checkout([$class: 'GitSCM', branches: [[name: '*/preprod']], extensions: [], userRemoteConfigs: [[credentialsId: 'Keygen-ssh', url: 'git@github.com:i-dair-tech/ri-codex-backend.git']]])   
+	  checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'Keygen-ssh', url: 'git@github.com:i-dair-tech/i-dair-codex-backend.git']]])   
           withCredentials([usernamePassword(credentialsId: 'idair', passwordVariable: 'idairpass', usernameVariable: 'idairuser')])  {
               sh 'docker login  -u ${idairuser} -p ${idairpass} '
           }
           script {
-            app = docker.build("windsocially/ri-codex-backend")
+            app = docker.build("windsocially/i-dair-codex-backend")
           }
         }
       }
       stage('version') {
         steps {
           script {
-            def patch  = readFile('/var/lib/jenkins/workspace/ri-codex-backend/patch.txt').trim()
-            def major  = readFile('/var/lib/jenkins/workspace/ri-codex-backend/major.txt').trim()
-            def minornew  = readFile('/var/lib/jenkins/workspace/ri-codex-backend/minor.txt').trim()
+            def patch  = readFile('/var/lib/jenkins/workspace/i-dair-codex-backend.ci/patch.txt').trim()
+            def major  = readFile('/var/lib/jenkins/workspace/i-dair-codex-backend.ci/major.txt').trim()
+            def minornew  = readFile('/var/lib/jenkins/workspace/i-dair-codex-backend.ci/minor.txt').trim()
             version = "${major}.${minornew}.${patch}"            
           }
         }
@@ -39,8 +39,8 @@ pipeline {
 	    app.push("latest")
           }
         }
-        sh "docker rmi -f windsocially/ri-codex-backend:v.${version}"
-        sh "docker rmi -f windsocially/ri-codex-backend"
+        sh "docker rmi -f windsocially/i-dair-codex-backend:v.${version}"
+        sh "docker rmi -f windsocially/i-dair-codex-backend"
       }
     }
       
